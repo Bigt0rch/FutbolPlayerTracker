@@ -1,0 +1,13 @@
+# Directorios
+bin/
+
+
+# Archivos
+*.class
+*.war
+*.ear
+*.log
+*.tmp
+*.swp
+*.bak
+*.DS_Store
