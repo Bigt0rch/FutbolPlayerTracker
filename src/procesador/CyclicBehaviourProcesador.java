@@ -137,10 +137,12 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				this.myAgent.send(aclMessage);
 			}
 			else if("clusterizar".equals(solicitud[0])) {
+				//TODO: Hacer que se utilicen datos por cada 90 mins para que la comparativa sea correcta
+				dataToCSV(procesarDatosClustering());
 				CSVLoader loader = new CSVLoader();
 		        loader.setSource(new File("resources/AgenteProcesador/temp/tempData.csv"));
 		        Instances data = loader.getDataSet();
-		        
+		       
 		        // Establecer el índice del atributo clase (si existe)
 		        if (data.classIndex() == -1) {
 		            data.setClassIndex(3);
@@ -152,8 +154,8 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		        kmeans.buildClusterer(data);
 		        
 		        //TODO: Pasar los resultados del clustering a el agenteUI
-		        //TODO: Hacer que se utilicen datos por cada 90 mins para que la comparativa sea correcta
-		        
+		       
+		       
 		        // Imprimir los centroides de los clusters
 		        Instances centroids = kmeans.getClusterCentroids();
 		        for (int i = 0; i < centroids.numInstances(); i++) {
@@ -205,9 +207,9 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		}
 	}
 
-	private void dataToCSV() {
+	private void dataToCSV(String[][] data) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("resources/AgenteProcesador/temp/tempData.csv"))) {
-            for (String[] fila : datos) {
+            for (String[] fila : data) {
                 writer.write(String.join(",", fila));
                 writer.newLine();
             }
@@ -247,9 +249,100 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 
 	}
 
+	private String[][] procesarDatosClustering(){
+		//creamos matriz 
+		String[][] datosC = new String[datos.length][76];
+		//buscamos los parámetros de la lista 
+		for(int i = 0; i < datos.length; i++ ){
+			int minutosJugados = Integer.parseInt(datos[i][columnas.get("time_played")]);
+
+			datosC[i][0] = datos[i][columnas.get("nombre")];
+			datosC[i][1] = datos[i][columnas.get("url")];
+			datosC[i][2] = datos[i][columnas.get("posicion")];
+			datosC[i][3] = datos[i][columnas.get("pais")];
+			datosC[i][4] = datos[i][columnas.get("altura")];
+			datosC[i][5] = datos[i][columnas.get("peso")];
+			datosC[i][6] = datos[i][columnas.get("equipo")];
+			datosC[i][7] = String.valueOf((Double.parseDouble(datos[i][columnas.get("goals")])/minutosJugados)*90);
+			datosC[i][8] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_passes_opposition_half")])/minutosJugados)*90);
+			datosC[i][9] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_passes_own_half")])/minutosJugados)*90);
+			datosC[i][10] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_open_play_passes")])/minutosJugados)*90);
+			datosC[i][11] = String.valueOf((Double.parseDouble(datos[i][columnas.get("times_tackled")])/minutosJugados)*90);
+			datosC[i][12] = String.valueOf((Double.parseDouble(datos[i][columnas.get("open_play_passes")])/minutosJugados)*90);
+			datosC[i][13] = String.valueOf((Double.parseDouble(datos[i][columnas.get("headed_goals")])/minutosJugados)*90);
+			datosC[i][14] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_long_passes")])/minutosJugados)*90);
+			datosC[i][15] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_successful_passes_excl_crosses_corners")])/minutosJugados)*90);
+			datosC[i][16] = String.valueOf((Double.parseDouble(datos[i][columnas.get("forward_passes")])/minutosJugados)*90);
+			datosC[i][17] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_dribbles")])/minutosJugados)*90);
+			datosC[i][18] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_fouls_won")])/minutosJugados)*90);
+			datosC[i][19] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_fouls_conceded")])/minutosJugados)*90);
+			datosC[i][20] = String.valueOf((Double.parseDouble(datos[i][columnas.get("backward_passes")])/minutosJugados)*90);
+			datosC[i][21] = String.valueOf((Double.parseDouble(datos[i][columnas.get("through_balls")])/minutosJugados)*90);
+			datosC[i][22] = String.valueOf((Double.parseDouble(datos[i][columnas.get("offsides")])/minutosJugados)*90);
+			datosC[i][23] = String.valueOf((Double.parseDouble(datos[i][columnas.get("corners_won")])/minutosJugados)*90);
+			datosC[i][24] = String.valueOf((Double.parseDouble(datos[i][columnas.get("yellow_cards")])/minutosJugados)*90);
+			datosC[i][25] = String.valueOf((Double.parseDouble(datos[i][columnas.get("goals_from_inside_box")])/minutosJugados)*90);
+			datosC[i][26] = String.valueOf((Double.parseDouble(datos[i][columnas.get("attempts_from_set_pieces")])/minutosJugados)*90);
+			datosC[i][27] = String.valueOf((Double.parseDouble(datos[i][columnas.get("goal_assists")])/minutosJugados)*90);
+			datosC[i][28] = String.valueOf((Double.parseDouble(datos[i][columnas.get("penalty_goals_conceded")])/minutosJugados)*90);
+			datosC[i][29] = String.valueOf((Double.parseDouble(datos[i][columnas.get("foul_attempted_tackle")])/minutosJugados)*90);
+			datosC[i][30] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_layoffs")])/minutosJugados)*90);
+			datosC[i][31] = String.valueOf((Double.parseDouble(datos[i][columnas.get("aerial_duels")])/minutosJugados)*90);
+			datosC[i][32] = String.valueOf((Double.parseDouble(datos[i][columnas.get("penalty_goals")])/minutosJugados)*90);
+			datosC[i][33] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_passes")])/minutosJugados)*90);
+			datosC[i][34] = String.valueOf((Double.parseDouble(datos[i][columnas.get("shots_off_target_inc_woodwork")])/minutosJugados)*90);
+			datosC[i][35] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_short_passes")])/minutosJugados)*90);
+			datosC[i][36] = String.valueOf((Double.parseDouble(datos[i][columnas.get("key_passes_attempt_assists")])/minutosJugados)*90);
+			datosC[i][37] = String.valueOf((Double.parseDouble(datos[i][columnas.get("duels_won")])/minutosJugados)*90);
+			datosC[i][38] = String.valueOf((Double.parseDouble(datos[i][columnas.get("blocked_shots")])/minutosJugados)*90);
+			datosC[i][39] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_touches_in_opposition_box")])/minutosJugados)*90);
+			datosC[i][40] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_clearances")])/minutosJugados)*90);
+			datosC[i][41] = String.valueOf((Double.parseDouble(datos[i][columnas.get("goals_conceded_inside_box")])/minutosJugados)*90);
+			datosC[i][42] = String.valueOf((Double.parseDouble(datos[i][columnas.get("hit_woodwork")])/minutosJugados)*90);
+			datosC[i][43] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_shots")])/minutosJugados)*90);
+			datosC[i][44] = String.valueOf((Double.parseDouble(datos[i][columnas.get("ground_duels_won")])/minutosJugados)*90);
+			datosC[i][45] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_losses_of_possession")])/minutosJugados)*90);
+			datosC[i][46] = String.valueOf((Double.parseDouble(datos[i][columnas.get("shots_on_target_inc_goals")])/minutosJugados)*90);
+			datosC[i][47] = String.valueOf((Double.parseDouble(datos[i][columnas.get("goals_from_outside_box")])/minutosJugados)*90);
+			datosC[i][48] = String.valueOf((Double.parseDouble(datos[i][columnas.get("recoveries")])/minutosJugados)*90);
+			datosC[i][49] = String.valueOf((Double.parseDouble(datos[i][columnas.get("aerial_duels_won")])/minutosJugados)*90);
+			datosC[i][50] = String.valueOf((Double.parseDouble(datos[i][columnas.get("blocks")])/minutosJugados)*90);
+			datosC[i][51] = String.valueOf((Double.parseDouble(datos[i][columnas.get("goals_conceded_outside_box")])/minutosJugados)*90);
+			datosC[i][52] = String.valueOf((Double.parseDouble(datos[i][columnas.get("touches")])/minutosJugados)*90);
+			datosC[i][53] = String.valueOf((Double.parseDouble(datos[i][columnas.get("goals_conceded")])/minutosJugados)*90);
+			datosC[i][54] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_tackles")])/minutosJugados)*90);
+			datosC[i][55] = String.valueOf((Double.parseDouble(datos[i][columnas.get("clean_sheets")])/minutosJugados)*90);
+			datosC[i][56] = String.valueOf((Double.parseDouble(datos[i][columnas.get("overruns")])/minutosJugados)*90);
+			datosC[i][57] = String.valueOf((Double.parseDouble(datos[i][columnas.get("ground_duels")])/minutosJugados)*90);
+			datosC[i][58] = String.valueOf((Double.parseDouble(datos[i][columnas.get("duels_lost")])/minutosJugados)*90);
+			datosC[i][59] = String.valueOf((Double.parseDouble(datos[i][columnas.get("tackles_won")])/minutosJugados)*90);
+			datosC[i][60] = String.valueOf((Double.parseDouble(datos[i][columnas.get("handballs_conceded")])/minutosJugados)*90);
+			datosC[i][61] = String.valueOf((Double.parseDouble(datos[i][columnas.get("duels")])/minutosJugados)*90);
+			datosC[i][62] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_crosses_open_play")])/minutosJugados)*90);
+			datosC[i][63] = String.valueOf((Double.parseDouble(datos[i][columnas.get("foul_won_penalty")])/minutosJugados)*90);
+			datosC[i][64] = String.valueOf((Double.parseDouble(datos[i][columnas.get("throw_ins_to_own_player")])/minutosJugados)*90);
+			datosC[i][65] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_crosses_corners")])/minutosJugados)*90);
+			datosC[i][66] = String.valueOf((Double.parseDouble(datos[i][columnas.get("straight_red_cards")])/minutosJugados)*90);
+			datosC[i][67] = String.valueOf((Double.parseDouble(datos[i][columnas.get("interceptions")])/minutosJugados)*90);
+			datosC[i][68] = String.valueOf((Double.parseDouble(datos[i][columnas.get("corners_taken_incl_short_corners")])/minutosJugados)*90);
+			datosC[i][69] = String.valueOf((Double.parseDouble(datos[i][columnas.get("total_red_cards")])/minutosJugados)*90);
+			datosC[i][70] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_launches")])/minutosJugados)*90);
+			datosC[i][71] = String.valueOf((Double.parseDouble(datos[i][columnas.get("penalties_conceded")])/minutosJugados)*90);
+			datosC[i][72] = String.valueOf((Double.parseDouble(datos[i][columnas.get("red_cards_2nd_yellow")])/minutosJugados)*90);
+			datosC[i][73] = String.valueOf((Double.parseDouble(datos[i][columnas.get("successful_corners_into_box")])/minutosJugados)*90);
+			datosC[i][74] = String.valueOf((Double.parseDouble(datos[i][columnas.get("saves_made")])/minutosJugados)*90);
+			datosC[i][75] = String.valueOf((Double.parseDouble(datos[i][columnas.get("penalties_faced")])/minutosJugados)*90);
+		}
+		
+
+
+		return datosC;
+	}
+
 	public static void main(String[] args) {
 		actualizarCSV(new String[] { CSVPath });
 		System.out.println("Ayuda");
 	}
 
 }
+//nombre,url,posicion,pais,altura,peso,equipo,goals,successful_passes_opposition_half,successful_passes_own_half,successful_open_play_passes,times_tackled,open_play_passes,headed_goals,successful_long_passes,total_successful_passes_excl_crosses_corners,forward_passes,successful_dribbles,total_fouls_won,total_fouls_conceded,backward_passes,through_balls,offsides,corners_won,yellow_cards,goals_from_inside_box,attempts_from_set_pieces,goal_assists,penalty_goals_conceded,foul_attempted_tackle,successful_layoffs,aerial_duels,penalty_goals,total_passes,shots_off_target_inc_woodwork,successful_short_passes,key_passes_attempt_assists,duels_won,blocked_shots,total_touches_in_opposition_box,total_clearances,goals_conceded_inside_box,hit_woodwork,total_shots,ground_duels_won,total_losses_of_possession,shots_on_target_inc_goals,goals_from_outside_box,recoveries,aerial_duels_won,blocks,goals_conceded_outside_box,touches,goals_conceded,total_tackles,clean_sheets,overruns,ground_duels,duels_lost,tackles_won,handballs_conceded,duels,successful_crosses_open_play,foul_won_penalty,throw_ins_to_own_player,successful_crosses_corners,straight_red_cards,interceptions,corners_taken_incl_short_corners,total_red_cards,successful_launches,penalties_conceded,red_cards_2nd_yellow,successful_corners_into_box,saves_made,penalties_faced

@@ -31,6 +31,6 @@ public class AgenteProcesador extends Agent {
 			System.err.println("Agente "+getLocalName()+": "+e.getMessage());
 		}
 		//añado un comportamiento cíclico para recibir mensajes que demandan búsquedas y atenderlas
-		addBehaviour(new CyclicBehaviourBuscador());
+		addBehaviour(new CyclicBehaviourProcesador());
 	}
 }
