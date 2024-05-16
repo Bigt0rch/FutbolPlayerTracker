@@ -36,7 +36,7 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 			
 			//Si se solicita que los datos se actualicen se hace
 			respuesta = "ERROR";
-			if("A".equals(mensaje[1])) {
+			if("A".equals(mensaje[1]) || "actualizar".equals(mensaje[0])) {
 				actualizarCSV(new String[] { CSVPath });
 				respuesta = datos;
 			}
@@ -51,10 +51,17 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 			aclMessage.setLanguage(new SLCodec().getName());
 			aclMessage.setEnvelope(new Envelope());
 			aclMessage.getEnvelope().setPayloadEncoding("ISO8859_1");
-			aclMessage.setContentObject(respuesta);
-			this.myAgent.send(aclMessage);
-			respuesta = columnas;
-			this.myAgent.send(aclMessage);
+			if(mensaje[0].equals("datos")) {				
+				aclMessage.setContentObject(respuesta);
+				this.myAgent.send(aclMessage);
+				respuesta = columnas;
+				aclMessage.setContentObject(respuesta);
+				this.myAgent.send(aclMessage);
+			}
+			else {
+				aclMessage.setContent("OK");
+				this.myAgent.send(aclMessage);
+			}
 		}
 		catch (UnreadableException e)
 		{
@@ -76,16 +83,15 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 			
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
 	private void leerCSV() {
-        try {
+		try {
         	FileReader fileReader = new FileReader(CSVPath);
         	CSVReader csvReader = new CSVReader(fileReader);
-        	
+        	columnas = new HashMap<>();
         	
         	//Contamos filas
         	int numFilas =0;
@@ -94,15 +100,16 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
             }
         	csvReader.close();
         	
+        	
         	//Rellenamos
         	fileReader = new FileReader(CSVPath);
         	csvReader = new CSVReader(fileReader);
         	datos = new String[numFilas][];
-        	int n = 1;
+        	int n = 0;
         	String[] linea;
             while (n < numFilas) {
             	linea = csvReader.readNext();
-                datos[n-1] = linea;
+            	datos[n] = linea;
                 n++;
             }
             csvReader.close();
@@ -117,12 +124,13 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 			    for (String campo : fila) {
 			    	if(i==0) {
 			    		columnas.put(campo, j);
+			    		datos[i][j] = campo;
 			    	}
 			    	else {
 			    		if("".equals(campo) || "null".equals(campo)) {
 			    			campo = "0";
 			    		}
-			    		datos[i-1][j] = campo;
+			    		datos[i][j] = campo;
 			    	}
 			    	j++;
 			    }
@@ -140,6 +148,7 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
         
 	}
 	
+	//Metodo main para probar codigo
 	public static void main(String[] args) {
 		actualizarCSV(new String[] { CSVPath });
 		System.out.println("Ayuda");

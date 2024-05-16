@@ -6,7 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/jade.jar"/>
 	<classpathentry kind="lib" path="lib/opencsv-5.9.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math4/commons-math4-core-4.0-beta1.jar"/>
@@ -28,5 +27,6 @@
 	<classpathentry kind="lib" path="lib/commons-math4/commons-math4-transform-4.0-beta1-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math4/commons-math4-transform-4.0-beta1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/weka.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.14.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
