@@ -4,11 +4,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
 import jade.content.lang.sl.SLCodec;
+import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.FIPAAgentManagement.Envelope;
 import jade.lang.acl.*;
@@ -16,13 +18,13 @@ import java.io.Serializable;
 
 public class CyclicBehaviourBuscador extends CyclicBehaviour {
 	
-	Map<String,Integer> columnas = new HashMap<>();
+	HashMap<String,Integer> columnas = new HashMap<>();
 	String datos[][];
-	String pythonScriptPath = "./resources/python/script.py";
-	String CSVPath = "./resources/rawData/data.csv";
+	static String pythonScriptPath = "./python_tools/scrapLaLiga.py";
+	static String CSVPath = "./resources/AgenteBuscador/rawData/data.csv";
 
 	public void action() {
-		// Creamos la espera de mensajes en modo bloqueante y con un filtro de tipo REQUEST
+		// Recibimos una solicitud de datos
 		ACLMessage msg=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
 		Serializable respuesta;
 		try
@@ -32,30 +34,26 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 			
 			String[] mensaje = ((String)msg.getContentObject()).split(";");
 			
-			leerCSV();
+			//Si se solicita que los datos se actualicen se hace
 			respuesta = "ERROR";
-			if("actualizar".equals(mensaje[0])) {
-				actualizarCSV(null);
-				respuesta = "DONE";
+			if("A".equals(mensaje[1])) {
+				actualizarCSV(new String[] { CSVPath });
+				respuesta = datos;
 			}
-			else if("general".equals(mensaje[0])){
-				respuesta = jugadorX90(mensaje[1],mensaje[2]);
-			}
-			else if("generalPortero".equals(mensaje[0])) {
-				
-			}
-				
-            
 			
-			
-			//Cuando la búsqueda ha finalizado, enviamos un mensaje de respuesta
+			//Leemos los datos del CSV y los cargamos en memoria para mandarlos
+			leerCSV();
+				
+			//Enviamos los datos crudos al procesador
 			ACLMessage aclMessage = new ACLMessage(ACLMessage.INFORM);
-			aclMessage.addReceiver(msg.getSender());
+			aclMessage.addReceiver(new AID("Procesador", AID.ISLOCALNAME));
 			aclMessage.setOntology("ontologia");
 			aclMessage.setLanguage(new SLCodec().getName());
 			aclMessage.setEnvelope(new Envelope());
 			aclMessage.getEnvelope().setPayloadEncoding("ISO8859_1");
 			aclMessage.setContentObject(respuesta);
+			this.myAgent.send(aclMessage);
+			respuesta = columnas;
 			this.myAgent.send(aclMessage);
 		}
 		catch (UnreadableException e)
@@ -66,14 +64,15 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 		}
 	}
 
-	private void actualizarCSV(String[] params) {
+	private static void actualizarCSV(String[] params) {
 		try {
-			String[] command = {"python", pythonScriptPath};
-			ProcessBuilder pb = new ProcessBuilder(command);
+			String[] command = {"python3", pythonScriptPath};
+			String[] result = Stream.concat(Stream.of(command), Stream.of(params)).toArray(String[]::new);
+			ProcessBuilder pb = new ProcessBuilder(result);
 			Process process;			
 			process = pb.start();
 			int exitCode = process.waitFor();
-			
+			System.out.println(exitCode);
 			
 			
 		} catch (Exception e) {
@@ -87,6 +86,30 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
         	FileReader fileReader = new FileReader(CSVPath);
         	CSVReader csvReader = new CSVReader(fileReader);
         	
+        	
+        	//Contamos filas
+        	int numFilas =0;
+        	while ((csvReader.readNext()) != null) {
+                numFilas++;
+            }
+        	csvReader.close();
+        	
+        	//Rellenamos
+        	fileReader = new FileReader(CSVPath);
+        	csvReader = new CSVReader(fileReader);
+        	datos = new String[numFilas][];
+        	int n = 1;
+        	String[] linea;
+            while (n < numFilas) {
+            	linea = csvReader.readNext();
+                datos[n-1] = linea;
+                n++;
+            }
+            csvReader.close();
+            
+            //Solucionamos imperfecciones
+            fileReader = new FileReader(CSVPath);
+        	csvReader = new CSVReader(fileReader);
         	String[] fila;
         	int i = 0;
 			while ((fila = csvReader.readNext()) != null) {
@@ -96,7 +119,7 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 			    		columnas.put(campo, j);
 			    	}
 			    	else {
-			    		if(campo == null) {
+			    		if("".equals(campo) || "null".equals(campo)) {
 			    			campo = "0";
 			    		}
 			    		datos[i-1][j] = campo;
@@ -117,13 +140,9 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
         
 	}
 	
-	private GeneralPlayerDataX90 jugadorX90(String nombre, String equipo) {
-		int i = 0;
-		while(!(datos[i][0].contains(nombre) && datos[i][6].contains(equipo))) {
-			i++;
-		}
-		return new GeneralPlayerDataX90(datos[i], columnas);
-		
-	} 
+	public static void main(String[] args) {
+		actualizarCSV(new String[] { CSVPath });
+		System.out.println("Ayuda");
+	}
 
 }
