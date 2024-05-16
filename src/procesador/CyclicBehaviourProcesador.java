@@ -30,8 +30,8 @@ import java.io.Serializable;
 
 public class CyclicBehaviourProcesador extends CyclicBehaviour {
 
-	Map<String,Integer> columnas;
-	String datos[][];
+	static Map<String,Integer> columnas;
+	static String datos[][];
 	static String pythonScriptPath = "./python_tools/scrapLaLiga.py";
 	static String CSVPath = "./resources/rawData/data.csv";
 
@@ -207,7 +207,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		}
 	}
 
-	private void dataToCSV(String[][] data) {
+	private static void dataToCSV(String[][] data) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("resources/AgenteProcesador/temp/tempData.csv"))) {
             for (String[] fila : data) {
                 writer.write(String.join(",", fila));
@@ -249,7 +249,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 
 	}
 
-	private String[][] procesarDatosClustering(){
+	private static String[][] procesarDatosClustering(){
 		//creamos matriz 
 		String[][] datosC = new String[datos.length][76];
 		//buscamos los parámetros de la lista 
@@ -340,9 +340,114 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 	}
 
 	public static void main(String[] args) {
-		actualizarCSV(new String[] { CSVPath });
-		System.out.println("Ayuda");
+		
+		//probamos clustering
+		leerCSV();
+		//probamos cluesterizacion
+		try {
+			pruebaCluesterizar();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
+	static void leerCSV() {
+		String CSVPath = "./output.csv";
+		
+        try {
+        	FileReader fileReader = new FileReader(CSVPath);
+        	CSVReader csvReader = new CSVReader(fileReader);
+        	
+        	
+        	//Contamos filas
+        	int numFilas =0;
+        	while ((csvReader.readNext()) != null) {
+                numFilas++;
+            }
+        	csvReader.close();
+        	
+        	//Rellenamos
+        	fileReader = new FileReader(CSVPath);
+        	csvReader = new CSVReader(fileReader);
+        	datos = new String[numFilas][];
+        	int n = 1;
+        	String[] linea;
+            while (n < numFilas) {
+            	linea = csvReader.readNext();
+                datos[n-1] = linea;
+                n++;
+            }
+            csvReader.close();
+            
+            //Solucionamos imperfecciones
+            fileReader = new FileReader(CSVPath);
+        	csvReader = new CSVReader(fileReader);
+        	String[] fila;
+        	int i = 0;
+			while ((fila = csvReader.readNext()) != null) {
+				int j = 0;
+			    for (String campo : fila) {
+			    	if(i==0) {
+			    		columnas.put(campo, j);
+			    	}
+			    	else {
+			    		if("".equals(campo) || "null".equals(campo)) {
+			    			campo = "0";
+			    		}
+			    		datos[i-1][j] = campo;
+			    	}
+			    	j++;
+			    }
+			    i++;
+			}
+			
+			// Cerrar el lector
+			csvReader.close();
+			
+		} catch (CsvValidationException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        
+	}
+
+	private static void pruebaCluesterizar() throws Exception{
+
+
+		//TODO: Hacer que se utilicen datos por cada 90 mins para que la comparativa sea correcta
+		dataToCSV(procesarDatosClustering());
+		CSVLoader loader = new CSVLoader();
+		loader.setSource(new File("resources/AgenteProcesador/temp/tempData.csv"));
+		Instances data = loader.getDataSet();
+	   
+		// Establecer el índice del atributo clase (si existe)
+		if (data.classIndex() == -1) {
+			data.setClassIndex(3);
+		}
+
+		// Configurar el algoritmo de clustering (k-Means)
+		SimpleKMeans kmeans = new SimpleKMeans();
+		kmeans.setNumClusters(5);
+		kmeans.buildClusterer(data);
+		
+		//TODO: Pasar los resultados del clustering a el agenteUI
+	   
+	   
+		// Imprimir los centroides de los clusters
+		Instances centroids = kmeans.getClusterCentroids();
+		for (int i = 0; i < centroids.numInstances(); i++) {
+			System.out.println("Centroide del cluster " + (i + 1) + ": " + centroids.instance(i));
+		}
+
+		// Imprimir la asignación de cada instancia a un cluster
+		for (int i = 0; i < data.numInstances(); i++) {
+			int cluster = kmeans.clusterInstance(data.instance(i));
+			System.out.println("Instancia " + (i + 1) + " pertenece al cluster " + (cluster + 1));
+		}
+
+	}
 }
 //nombre,url,posicion,pais,altura,peso,equipo,goals,successful_passes_opposition_half,successful_passes_own_half,successful_open_play_passes,times_tackled,open_play_passes,headed_goals,successful_long_passes,total_successful_passes_excl_crosses_corners,forward_passes,successful_dribbles,total_fouls_won,total_fouls_conceded,backward_passes,through_balls,offsides,corners_won,yellow_cards,goals_from_inside_box,attempts_from_set_pieces,goal_assists,penalty_goals_conceded,foul_attempted_tackle,successful_layoffs,aerial_duels,penalty_goals,total_passes,shots_off_target_inc_woodwork,successful_short_passes,key_passes_attempt_assists,duels_won,blocked_shots,total_touches_in_opposition_box,total_clearances,goals_conceded_inside_box,hit_woodwork,total_shots,ground_duels_won,total_losses_of_possession,shots_on_target_inc_goals,goals_from_outside_box,recoveries,aerial_duels_won,blocks,goals_conceded_outside_box,touches,goals_conceded,total_tackles,clean_sheets,overruns,ground_duels,duels_lost,tackles_won,handballs_conceded,duels,successful_crosses_open_play,foul_won_penalty,throw_ins_to_own_player,successful_crosses_corners,straight_red_cards,interceptions,corners_taken_incl_short_corners,total_red_cards,successful_launches,penalties_conceded,red_cards_2nd_yellow,successful_corners_into_box,saves_made,penalties_faced
