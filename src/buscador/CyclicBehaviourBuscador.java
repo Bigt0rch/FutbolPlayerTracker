@@ -30,9 +30,9 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 		try
 		{
 						//Imprimimos por pantalla el texto a buscar
-			System.out.println(msg.getSender().getName()+":"+ (String)msg.getContentObject());
+			System.out.println(msg.getSender().getName()+":"+ (String)msg.getContent());
 			
-			String[] mensaje = ((String)msg.getContentObject()).split(";");
+			String[] mensaje = ((String)msg.getContent()).split(";");
 			
 			//Si se solicita que los datos se actualicen se hace
 			respuesta = "ERROR";
@@ -46,15 +46,16 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 				
 			//Enviamos los datos crudos al procesador
 			ACLMessage aclMessage = new ACLMessage(ACLMessage.INFORM);
-			aclMessage.addReceiver(new AID("Procesador", AID.ISLOCALNAME));
+			aclMessage.addReceiver(new AID("agenteProcesador", AID.ISLOCALNAME));
 			aclMessage.setOntology("ontologia");
 			aclMessage.setLanguage(new SLCodec().getName());
 			aclMessage.setEnvelope(new Envelope());
 			aclMessage.getEnvelope().setPayloadEncoding("ISO8859_1");
-			if(mensaje[0].equals("datos")) {				
+			if(mensaje[0].equals("datos")) {
+				respuesta = columnas;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				respuesta = columnas;
+				respuesta = datos;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
 			}
@@ -63,10 +64,7 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 				this.myAgent.send(aclMessage);
 			}
 		}
-		catch (UnreadableException e)
-		{
-			e.printStackTrace();
-		} catch (IOException e) {
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

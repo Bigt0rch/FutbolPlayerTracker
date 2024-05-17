@@ -39,12 +39,12 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 	public void action() {
 		//Recibimos la solicitud de la UI
 		ACLMessage solicitudMsg=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-
+		System.out.println(solicitudMsg.getContent());
 		String[] solicitud = solicitudMsg.getContent().split(";");
 
 		//Construimos y mandamos un mensaje solicitando los datos al buscador
 		ACLMessage pedirDatos = new ACLMessage(ACLMessage.REQUEST);
-		pedirDatos.addReceiver(new AID("Buscador", AID.ISLOCALNAME));
+		pedirDatos.addReceiver(new AID("agenteBuscador", AID.ISLOCALNAME));
 		pedirDatos.setOntology("ontologia");
 		pedirDatos.setLanguage(new SLCodec().getName());
 		pedirDatos.setEnvelope(new Envelope());
@@ -55,10 +55,10 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		try
 		{	
 			//Recibimos los datos, junto con el mapa de columnas
-			ACLMessage dataMsg=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 			ACLMessage columnasMsg=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			HashMap<String,Integer> columnas = (HashMap<String,Integer>)columnasMsg.getContentObject();
-			String datos[][] = (String[][])dataMsg.getContentObject();
+			ACLMessage dataMsg=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			columnas = (HashMap<String,Integer>)columnasMsg.getContentObject();
+			datos = (String[][])dataMsg.getContentObject();
 			
 			//Preparamos un mensage para enviar la info que se nos solicite
 			Serializable respuesta = "ERROR"; //Respuesta por defecto(no deberia mandarse nunca)
@@ -93,20 +93,21 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				ArrayList<Double> cargas = new ArrayList<Double>();
 				ArrayList<Double> altura = new ArrayList<Double>();
 				ArrayList<Double> duelosAereos = new ArrayList<Double>();
-				for(int i = 0; i < datos.length; i++) {
+				for(int i = 1; i < datos.length; i++) {
+					//System.out.println(datos[i][columnas.get("peso")]);
 					if(datos[i][columnas.get("peso")] != null && 
 					   datos[i][columnas.get("tackles_won")] != null &&
-					   Integer.parseInt(datos[i][columnas.get("peso")]) != 0 && 
-					   Integer.parseInt(datos[i][columnas.get("tackles_won")]) != 0){
-						peso.add((double)Integer.parseInt(datos[i][columnas.get("peso")]));
-						cargas.add((double)Integer.parseInt(datos[i][columnas.get("tackles_won")]));
+					   (int) Double.parseDouble(datos[i][columnas.get("peso")]) != 0 && 
+					   (int) Double.parseDouble(datos[i][columnas.get("tackles_won")]) != 0){
+						peso.add(Double.parseDouble(datos[i][columnas.get("peso")]));
+						cargas.add(Double.parseDouble(datos[i][columnas.get("tackles_won")]));
 					}
 					if(datos[i][columnas.get("altura")] != null && 
 					   datos[i][columnas.get("aerial_duels_won")] != null &&
-					   Integer.parseInt(datos[i][columnas.get("altura")]) != 0 && 
-					   Integer.parseInt(datos[i][columnas.get("aerial_duels_won")]) != 0){
-						altura.add((double)Integer.parseInt(datos[i][columnas.get("altura")]));
-						duelosAereos.add((double)Integer.parseInt(datos[i][columnas.get("aerial_duels_won")]));
+					   (int) Double.parseDouble(datos[i][columnas.get("altura")]) != 0 && 
+					   (int) Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]) != 0){
+						altura.add(Double.parseDouble(datos[i][columnas.get("altura")]));
+						duelosAereos.add(Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]));
 					}
 				}
 				PearsonsCorrelation correlacion = new PearsonsCorrelation();
@@ -119,6 +120,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		        double coeficientePearsonAlturaDuelosAereos = correlacion.correlation(arrayAltura, arrayDuelosAereos);
 		        double coeficientePearsonAlturaCargas = correlacion.correlation(arrayAltura, arrayDuelosAereos);
 		        
+		        System.out.println("Voy a mandar los mensajes ahora");
 		        respuesta = arrayPeso;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
@@ -202,7 +204,8 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 
 	private PlayerDataX90 dataX90(String nombre, String equipo) {
 		int i = 0;
-		while(!(datos[i][0].contains(nombre) && datos[i][7].contains(equipo))) {
+		while(!(datos[i][0].contains(nombre) && datos[i][6].contains(equipo))) {
+			System.out.println(i + " " + datos[i][0] + " " + datos[i][6]);
 			i++;
 		}
 		if(datos[i][columnas.get("posicion")].equals("Portero")) {

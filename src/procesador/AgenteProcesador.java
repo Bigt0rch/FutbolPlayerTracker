@@ -16,7 +16,7 @@ public class AgenteProcesador extends Agent {
 		dfd.setName(getAID());
 		ServiceDescription sd = new ServiceDescription();
 		sd.setName("Procesador");
-		//establezco el tipo del servicio “buscar” para poder localizarlo cuando haga una busqueda
+		//establezco el tipo del servicio “procesar” para poder localizarlo cuando haga una busqueda
 		sd.setType("procesar");
 		sd.addOntologies("ontologia");
 		sd.addLanguages(new SLCodec().getName());
