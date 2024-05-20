@@ -7,9 +7,10 @@ public class CyclicBehaviourVisualizador  extends CyclicBehaviour {
         ACLMessage
         msg1=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
         try{
-            //Recibimos los datos a analizar, que vienen en el mensaje del agente AnalizadorWeka como un objeto ResultadoAnalisis
-            ResultadoAnalisis resultadoAnalisis = new ResultadoAnalisis();
-            resultadoAnalisis = (ResultadoAnalisis) msg1.getContentObject();
+            //Recibimos los datos a analizar, que vienen en el mensaje del agente AnalizadorWeka como un objeto // ??
+            PlayerDataX90 playerDataX90 = new PlayerDataX90();
+            general_playerDataX90 = (GeneralPlayerDataX90) msg1.getContentObject();
+            gk_playerDataX90 = (GoalkeeperPlayerDataX90) msg1.getContentObject();
             //Mostramos al usuario el resultado obtenido en la pantalla en la JTextArea
             JTextArea textArea = new JTextArea();
             if (metodo_clasificacion.equals("J48")){

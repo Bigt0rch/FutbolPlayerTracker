@@ -8,8 +8,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 
 public class AgenteVisualizador extends Agent {
-    public void setup()
-	{
+    public void setup(){
 		//Crear servicios proporcionados por el agente y registrarlos en la plataforma
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
@@ -20,16 +19,14 @@ public class AgenteVisualizador extends Agent {
 		sd.addOntologies("ontologia");
 		sd.addLanguages(new SLCodec().getName());
 		dfd.addServices(sd);
-		try
-		{
+		try{
 			//registro el servicio en el DF
 			DFService.register(this, dfd);
 		}
-		catch(FIPAException e)
-		{
+		catch(FIPAException e){
 			System.err.println("Agente "+getLocalName()+": "+e.getMessage());
 		}
 		//añado un comportamiento cíclico para recibir mensajes que demandan búsquedas y atenderlas
-		addBehaviour(new CyclicBehaviourBuscador());
+		addBehaviour(new CyclicBehaviourVisualizador());
 	}
 }

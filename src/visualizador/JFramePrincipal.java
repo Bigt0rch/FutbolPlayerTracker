@@ -51,7 +51,7 @@ public class JFramePrincipal extends JFrame {
                 }
             }
         });
-        setTitle("Agente de Usuario");
+        setTitle("Agente de Visualización");
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setBounds(100, 100, 868, 670);
         JMenuBar menuBar = new JMenuBar();
