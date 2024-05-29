@@ -7,6 +7,6 @@ public class PlayerDataX90 implements Serializable{
 	public String name;
 	public String team;
 	public String nationality;
-	public int height;
-	public int weight;
+	public Double height;
+	public Double weight;
 }

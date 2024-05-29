@@ -59,7 +59,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 			ACLMessage dataMsg=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 			columnas = (HashMap<String,Integer>)columnasMsg.getContentObject();
 			datos = (String[][])dataMsg.getContentObject();
-			
+
 			//Preparamos un mensage para enviar la info que se nos solicite
 			Serializable respuesta = "ERROR"; //Respuesta por defecto(no deberia mandarse nunca)
 			ACLMessage aclMessage = new ACLMessage(ACLMessage.INFORM);
@@ -68,19 +68,29 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 			aclMessage.setLanguage(new SLCodec().getName());
 			aclMessage.setEnvelope(new Envelope());
 			aclMessage.getEnvelope().setPayloadEncoding("ISO8859_1");
-			
+
 			//Observamos que se nos pide en la peticion y actuamos en consecuencia
 			if("general".equals(solicitud[0])){
-				respuesta = dataX90(solicitud[2],solicitud[3]);
-				aclMessage.setContentObject(respuesta);
+				try {
+					respuesta = dataX90(solicitud[2],solicitud[3]);
+					aclMessage.setContentObject(respuesta);
+				}
+				catch(IndexOutOfBoundsException e) {
+					aclMessage.setContent("Ese jugador probablemente no juega en el equipo indicado");
+				}
 				this.myAgent.send(aclMessage);
 			}
 			else if("comparar".equals(solicitud[0])) {
-				respuesta = dataX90(solicitud[2],solicitud[3]);
-				aclMessage.setContentObject(respuesta);
-				this.myAgent.send(aclMessage);
-				respuesta = dataX90(solicitud[4],solicitud[5]);
-				aclMessage.setContentObject(respuesta);
+				try {
+					respuesta = dataX90(solicitud[2],solicitud[3]);
+					aclMessage.setContentObject(respuesta);
+					this.myAgent.send(aclMessage);
+					respuesta = dataX90(solicitud[4],solicitud[5]);
+					aclMessage.setContentObject(respuesta);
+				}
+				catch(IndexOutOfBoundsException e) {
+					aclMessage.setContent("Ese jugador probablemente no juega en el equipo indicado");
+				}
 				this.myAgent.send(aclMessage);
 			}
 			else if("datosEquipo".equals(solicitud[0])) {
@@ -96,16 +106,16 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				for(int i = 1; i < datos.length; i++) {
 					//System.out.println(datos[i][columnas.get("peso")]);
 					if(datos[i][columnas.get("peso")] != null && 
-					   datos[i][columnas.get("tackles_won")] != null &&
-					   (int) Double.parseDouble(datos[i][columnas.get("peso")]) != 0 && 
-					   (int) Double.parseDouble(datos[i][columnas.get("tackles_won")]) != 0){
+							datos[i][columnas.get("tackles_won")] != null &&
+							(int) Double.parseDouble(datos[i][columnas.get("peso")]) != 0 && 
+							(int) Double.parseDouble(datos[i][columnas.get("tackles_won")]) != 0){
 						peso.add(Double.parseDouble(datos[i][columnas.get("peso")]));
 						cargas.add(Double.parseDouble(datos[i][columnas.get("tackles_won")]));
 					}
 					if(datos[i][columnas.get("altura")] != null && 
-					   datos[i][columnas.get("aerial_duels_won")] != null &&
-					   (int) Double.parseDouble(datos[i][columnas.get("altura")]) != 0 && 
-					   (int) Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]) != 0){
+							datos[i][columnas.get("aerial_duels_won")] != null &&
+							(int) Double.parseDouble(datos[i][columnas.get("altura")]) != 0 && 
+							(int) Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]) != 0){
 						altura.add(Double.parseDouble(datos[i][columnas.get("altura")]));
 						duelosAereos.add(Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]));
 					}
@@ -115,13 +125,13 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				double[] arrayCargas = cargas.stream().mapToDouble(i -> i).toArray();
 				double[] arrayAltura = altura.stream().mapToDouble(i -> i).toArray();
 				double[] arrayDuelosAereos = new double[duelosAereos.size()];
-		        double coeficientePearsonPesoCargas = correlacion.correlation(arrayPeso, arrayCargas);
-		        double coeficientePearsonPesoDuelosAereos = correlacion.correlation(arrayPeso, arrayCargas);
-		        double coeficientePearsonAlturaDuelosAereos = correlacion.correlation(arrayAltura, arrayDuelosAereos);
-		        double coeficientePearsonAlturaCargas = correlacion.correlation(arrayAltura, arrayDuelosAereos);
-		        
-		        System.out.println("Voy a mandar los mensajes ahora");
-		        respuesta = arrayPeso;
+				double coeficientePearsonPesoCargas = correlacion.correlation(arrayPeso, arrayCargas);
+				double coeficientePearsonPesoDuelosAereos = correlacion.correlation(arrayPeso, arrayCargas);
+				double coeficientePearsonAlturaDuelosAereos = correlacion.correlation(arrayAltura, arrayDuelosAereos);
+				double coeficientePearsonAlturaCargas = correlacion.correlation(arrayAltura, arrayDuelosAereos);
+
+				System.out.println("Voy a mandar los mensajes ahora");
+				respuesta = arrayPeso;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
 				respuesta = arrayCargas;
@@ -151,12 +161,12 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				CSVLoader loader = new CSVLoader();
 				loader.setSource(new File("resources/AgenteProcesador/temp/tempData.csv"));
 				Instances data = loader.getDataSet();
-		        
+
 				// Configurar el algoritmo de clustering (k-Means)
 				SimpleKMeans kmeans = new SimpleKMeans();
 				kmeans.setNumClusters(Integer.parseInt(solicitud[2]));
 				kmeans.buildClusterer(data);
-				
+
 				String[] playerNames = new String[data.numInstances()];
 				int[] playerCluster = new int[data.numInstances()];
 
@@ -192,14 +202,14 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 	}
 
 	private static void dataToCSV(String[][] data) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("resources/AgenteProcesador/temp/tempData.csv"))) {
-            for (String[] fila : data) {
-                writer.write(String.join(",", fila));
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter("resources/AgenteProcesador/temp/tempData.csv"))) {
+			for (String[] fila : data) {
+				writer.write(String.join(",", fila));
+				writer.newLine();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private PlayerDataX90 dataX90(String nombre, String equipo) {
@@ -214,7 +224,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		return new GeneralPlayerDataX90(datos[i], columnas);
 
 	}
-	
+
 	private TeamData equipo(String equipo) {
 		int i = 0;
 		List<Integer> indices = new ArrayList<>();
@@ -240,7 +250,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 			if(minutosJugados < 1 || datos[i][columnas.get("posicion")].equals("Portero")) {
 				continue;
 			}
-			
+
 
 			datosC[j][0] = i + "";
 			datosC[j][1] = datos[i][columnas.get("altura")];
@@ -328,65 +338,65 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 
 	static void leerCSV() {
 		String CSVPath = "./output.csv";
-		
-        try {
-        	FileReader fileReader = new FileReader(CSVPath);
-        	CSVReader csvReader = new CSVReader(fileReader);
-        	columnas = new HashMap<>();
-        	
-        	//Contamos filas
-        	int numFilas =0;
-        	while ((csvReader.readNext()) != null) {
-                numFilas++;
-            }
-        	csvReader.close();
-        	
-        	
-        	//Rellenamos
-        	fileReader = new FileReader(CSVPath);
-        	csvReader = new CSVReader(fileReader);
-        	datos = new String[numFilas][];
-        	int n = 0;
-        	String[] linea;
-            while (n < numFilas) {
-            	linea = csvReader.readNext();
-            	datos[n] = linea;
-                n++;
-            }
-            csvReader.close();
-            
-            //Solucionamos imperfecciones
-            fileReader = new FileReader(CSVPath);
-        	csvReader = new CSVReader(fileReader);
-        	String[] fila;
-        	int i = 0;
+
+		try {
+			FileReader fileReader = new FileReader(CSVPath);
+			CSVReader csvReader = new CSVReader(fileReader);
+			columnas = new HashMap<>();
+
+			//Contamos filas
+			int numFilas =0;
+			while ((csvReader.readNext()) != null) {
+				numFilas++;
+			}
+			csvReader.close();
+
+
+			//Rellenamos
+			fileReader = new FileReader(CSVPath);
+			csvReader = new CSVReader(fileReader);
+			datos = new String[numFilas][];
+			int n = 0;
+			String[] linea;
+			while (n < numFilas) {
+				linea = csvReader.readNext();
+				datos[n] = linea;
+				n++;
+			}
+			csvReader.close();
+
+			//Solucionamos imperfecciones
+			fileReader = new FileReader(CSVPath);
+			csvReader = new CSVReader(fileReader);
+			String[] fila;
+			int i = 0;
 			while ((fila = csvReader.readNext()) != null) {
 				int j = 0;
-			    for (String campo : fila) {
-			    	if(i==0) {
-			    		columnas.put(campo, j);
-			    		datos[i][j] = campo;
-			    	}
-			    	else {
-			    		if("".equals(campo) || "null".equals(campo)) {
-			    			campo = "0";
-			    		}
-			    		datos[i][j] = campo;
-			    	}
-			    	j++;
-			    }
-			    i++;
+				for (String campo : fila) {
+					if(i==0) {
+						columnas.put(campo, j);
+						datos[i][j] = campo;
+					}
+					else {
+						if("".equals(campo) || "null".equals(campo)) {
+							campo = "0";
+						}
+						datos[i][j] = campo;
+					}
+					j++;
+				}
+				i++;
 			}
-			
+
 			// Cerrar el lector
 			csvReader.close();
-			
+
 		} catch (CsvValidationException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        
+
 	}
 
 	private static void pruebaCluesterizar() throws Exception{
@@ -394,15 +404,15 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		CSVLoader loader = new CSVLoader();
 		loader.setSource(new File("resources/AgenteProcesador/temp/tempData.csv"));
 		Instances data = loader.getDataSet();
-        
+
 		// Configurar el algoritmo de clustering (k-Means)
 		SimpleKMeans kmeans = new SimpleKMeans();
 		kmeans.setNumClusters(3);
 		kmeans.buildClusterer(data);
-		
+
 		//TODO: Pasar los resultados del clustering a el agenteUI
-	   
-	   
+
+
 		// Imprimir los centroides de los clusters
 		Instances centroids = kmeans.getClusterCentroids();
 		for (int i = 0; i < centroids.numInstances(); i++) {
@@ -416,10 +426,10 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		}
 
 	}
-	
+
 	//Metodo main para probar codigo
 	public static void main(String[] args) {
-		
+
 		//probamos clustering
 		leerCSV();
 		//probamos cluesterizacion
@@ -428,7 +438,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 }
 //nombre,url,posicion,pais,altura,peso,equipo,goals,successful_passes_opposition_half,successful_passes_own_half,successful_open_play_passes,times_tackled,open_play_passes,headed_goals,successful_long_passes,total_successful_passes_excl_crosses_corners,forward_passes,successful_dribbles,total_fouls_won,total_fouls_conceded,backward_passes,through_balls,offsides,corners_won,yellow_cards,goals_from_inside_box,attempts_from_set_pieces,goal_assists,penalty_goals_conceded,foul_attempted_tackle,successful_layoffs,aerial_duels,penalty_goals,total_passes,shots_off_target_inc_woodwork,successful_short_passes,key_passes_attempt_assists,duels_won,blocked_shots,total_touches_in_opposition_box,total_clearances,goals_conceded_inside_box,hit_woodwork,total_shots,ground_duels_won,total_losses_of_possession,shots_on_target_inc_goals,goals_from_outside_box,recoveries,aerial_duels_won,blocks,goals_conceded_outside_box,touches,goals_conceded,total_tackles,clean_sheets,overruns,ground_duels,duels_lost,tackles_won,handballs_conceded,duels,successful_crosses_open_play,foul_won_penalty,throw_ins_to_own_player,successful_crosses_corners,straight_red_cards,interceptions,corners_taken_incl_short_corners,total_red_cards,successful_launches,penalties_conceded,red_cards_2nd_yellow,successful_corners_into_box,saves_made,penalties_faced
