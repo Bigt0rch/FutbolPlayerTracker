@@ -104,31 +104,42 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				ArrayList<Double> altura = new ArrayList<Double>();
 				ArrayList<Double> duelosAereos = new ArrayList<Double>();
 				for(int i = 1; i < datos.length; i++) {
-					//System.out.println(datos[i][columnas.get("peso")]);
 					if(datos[i][columnas.get("peso")] != null && 
 							datos[i][columnas.get("tackles_won")] != null &&
 							(int) Double.parseDouble(datos[i][columnas.get("peso")]) != 0 && 
-							(int) Double.parseDouble(datos[i][columnas.get("tackles_won")]) != 0){
+							(int) Double.parseDouble(datos[i][columnas.get("tackles_won")]) != 0 &&
+							datos[i][columnas.get("altura")] != null && 
+							datos[i][columnas.get("aerial_duels_won")] != null &&
+							(int) Double.parseDouble(datos[i][columnas.get("altura")]) != 0 && 
+							(int) Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]) != 0 &&
+							Double.parseDouble(datos[i][columnas.get("altura")]) > 159){
 						peso.add(Double.parseDouble(datos[i][columnas.get("peso")]));
-						cargas.add(Double.parseDouble(datos[i][columnas.get("tackles_won")]));
+						cargas.add((Double.parseDouble(datos[i][columnas.get("tackles_won")])/Double.parseDouble(datos[i][columnas.get("time_played")]))*90);
+						altura.add(Double.parseDouble(datos[i][columnas.get("altura")]));
+						duelosAereos.add((Double.parseDouble(datos[i][columnas.get("aerial_duels_won")])/Double.parseDouble(datos[i][columnas.get("time_played")]))*90);
 					}
-					if(datos[i][columnas.get("altura")] != null && 
+					/*if(datos[i][columnas.get("altura")] != null && 
 							datos[i][columnas.get("aerial_duels_won")] != null &&
 							(int) Double.parseDouble(datos[i][columnas.get("altura")]) != 0 && 
 							(int) Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]) != 0){
 						altura.add(Double.parseDouble(datos[i][columnas.get("altura")]));
 						duelosAereos.add(Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]));
-					}
+					}*/
+				}
+				for(int i = 0; i < peso.size();i++){
+					System.out.println(peso.get(i) + " " + cargas.get(i) + " " + altura.get(i) + " " + duelosAereos.get(i));
 				}
 				PearsonsCorrelation correlacion = new PearsonsCorrelation();
 				double[] arrayPeso = peso.stream().mapToDouble(i -> i).toArray();
 				double[] arrayCargas = cargas.stream().mapToDouble(i -> i).toArray();
 				double[] arrayAltura = altura.stream().mapToDouble(i -> i).toArray();
-				double[] arrayDuelosAereos = new double[duelosAereos.size()];
+				double[] arrayDuelosAereos = duelosAereos.stream().mapToDouble(i -> i).toArray();
 				double coeficientePearsonPesoCargas = correlacion.correlation(arrayPeso, arrayCargas);
+				double coeficientePearsonAlturaPeso = correlacion.correlation(arrayAltura, arrayPeso);
 				double coeficientePearsonPesoDuelosAereos = correlacion.correlation(arrayPeso, arrayCargas);
-				double coeficientePearsonAlturaDuelosAereos = correlacion.correlation(arrayAltura, arrayDuelosAereos);
 				double coeficientePearsonAlturaCargas = correlacion.correlation(arrayAltura, arrayDuelosAereos);
+				double coeficientePearsonCargasDuelosAereos = correlacion.correlation(arrayCargas, arrayDuelosAereos);
+				double coeficientePearsonAlturaDuelosAereos = correlacion.correlation(arrayAltura, arrayDuelosAereos);
 
 				System.out.println("Voy a mandar los mensajes ahora");
 				respuesta = arrayPeso;
@@ -143,18 +154,38 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				respuesta = arrayDuelosAereos;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
+				
+				//PesoCargas
 				respuesta = coeficientePearsonPesoCargas;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
+				
+				//PesoAltura
+				respuesta = coeficientePearsonAlturaPeso;
+				aclMessage.setContentObject(respuesta);
+				this.myAgent.send(aclMessage);
+				
+				//PesoDuelosAereos
 				respuesta = coeficientePearsonPesoDuelosAereos;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				respuesta = coeficientePearsonAlturaDuelosAereos;
-				aclMessage.setContentObject(respuesta);
-				this.myAgent.send(aclMessage);
+				
+				
+				//CargasAltura
 				respuesta = coeficientePearsonAlturaCargas;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
+				
+				//CargasDuelosAereos
+				respuesta = coeficientePearsonCargasDuelosAereos;
+				aclMessage.setContentObject(respuesta);
+				this.myAgent.send(aclMessage);
+				
+				//AlturaDuelosAereos
+				respuesta = coeficientePearsonAlturaDuelosAereos;
+				aclMessage.setContentObject(respuesta);
+				this.myAgent.send(aclMessage);
+				
 			}
 			else if("clusterizar".equals(solicitud[0])) {
 				dataToCSV(procesarDatosClustering());
@@ -229,7 +260,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		int i = 0;
 		List<Integer> indices = new ArrayList<>();
 		while(i<datos.length) {
-			if(datos[i][7].contains(equipo)) {
+			if(datos[i][columnas.get("equipo")].contains(equipo)) {
 				indices.add(i);
 			}
 			i++;

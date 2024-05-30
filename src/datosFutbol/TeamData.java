@@ -38,17 +38,22 @@ public class TeamData implements Serializable{
 		
 		for(int i : indices) {
 			String[] jugador = data[i];
-			goles += Integer.parseInt(jugador[columnas.get("goals")]);
-			tiros_a_puerta += Integer.parseInt(jugador[columnas.get("total_shots")]);
-			pases += Integer.parseInt(jugador[columnas.get("total_passes")]);
-			asistencias += Integer.parseInt(jugador[columnas.get("goal_assists")]);
-			duelos += Integer.parseInt(jugador[columnas.get("duels")]);
-			duelos_ganados += Integer.parseInt(jugador[columnas.get("duels_won")]);
-			faltas += Integer.parseInt(jugador[columnas.get("total_fouls_conceded")]);
-			rojas_directas += Integer.parseInt(jugador[columnas.get("straight_red_cards")]);
-			rojas_por_2a_amarilla += Integer.parseInt(jugador[columnas.get("red_cards_2nd_yellow")]);
-			rojas += Integer.parseInt(jugador[columnas.get("total_red_cards")]);
-			amarillas += Integer.parseInt(jugador[columnas.get("total_red_cards")]);
+			System.out.println("Team data jugador " + i + ": " + jugador[0]);
+			goles += (int) Double.parseDouble(jugador[columnas.get("goals")]);
+			tiros_a_puerta += (int) Double.parseDouble(jugador[columnas.get("total_shots")]);
+			if(jugador[columnas.get("posicion")].equals("Portero")) {
+				goles_recibidos += (int) Double.parseDouble(jugador[columnas.get("goals_conceded")]);
+				tiros_a_puerta_recibidos += (int) Double.parseDouble(jugador[columnas.get("goals_conceded")]) + (int) Double.parseDouble(jugador[columnas.get("saves_made")]);				
+			}
+			pases += (int) Double.parseDouble(jugador[columnas.get("total_passes")]);
+			asistencias += (int) Double.parseDouble(jugador[columnas.get("goal_assists")]);
+			duelos += (int) Double.parseDouble(jugador[columnas.get("duels")]);
+			duelos_ganados += (int) Double.parseDouble(jugador[columnas.get("duels_won")]);
+			faltas += (int) Double.parseDouble(jugador[columnas.get("total_fouls_conceded")]);
+			rojas_directas += (int) Double.parseDouble(jugador[columnas.get("straight_red_cards")]);
+			rojas_por_2a_amarilla += (int) Double.parseDouble(jugador[columnas.get("red_cards_2nd_yellow")]);
+			rojas += (int) Double.parseDouble(jugador[columnas.get("total_red_cards")]);
+			amarillas += (int) Double.parseDouble(jugador[columnas.get("yellow_cards")]);
 		}
 	}
 	

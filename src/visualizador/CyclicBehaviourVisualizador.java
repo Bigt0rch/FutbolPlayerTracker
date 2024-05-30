@@ -14,6 +14,7 @@ import javax.swing.JTextArea;
 import datosFutbol.GeneralPlayerDataX90;
 import datosFutbol.GoalkeeperPlayerDataX90;
 import datosFutbol.PlayerDataX90;
+import datosFutbol.TeamData;
 import jade.content.lang.sl.SLCodec;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
@@ -68,6 +69,9 @@ public class CyclicBehaviourVisualizador  extends CyclicBehaviour {
     	} else if(Mensajes.code==5) {
     		currentCode=5;
     		pedirDatos.setContent("clusterizar;NA;"+Mensajes.clusters);
+    	} else if(Mensajes.code==6) {
+    		currentCode=6;
+    		pedirDatos.setContent("actualizar;NA;");
     	}
     	
     	this.myAgent.send(pedirDatos);
@@ -119,21 +123,59 @@ public class CyclicBehaviourVisualizador  extends CyclicBehaviour {
 				
 				if(p1 && p2){
 					JFramePrincipal.compararPorteroConPortero(gk_playerDataX90_1,gk_playerDataX90_2);
-				}/* else if(p1 && g2) {
-					JFramePrincipal.compararPorteroConGeneral(gk_playerDataX90_1,general_playerDataX90_2);
-				} else if(g1 && p2) {
-					JFramePrincipal.compararGeneralConPortero(general_playerDataX90_1,gk_playerDataX90_2);
-				}*/ else if(g1 && g2) {
+				} else if(g1 && g2) {
 					JFramePrincipal.compararGeneralConGeneral(general_playerDataX90_1,general_playerDataX90_2);
+				} else {
+					JFramePrincipal.operacionNoImplementada(1);
 				}
 
 				
 			} else if(currentCode==3){
+				ACLMessage result=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				TeamData teamData = (TeamData) result.getContentObject();
+				JFramePrincipal.mostrarDatosEquipo(teamData);
 				
 			} else if(currentCode==4){
+				ACLMessage peso=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double[] pesoData = (double[]) peso.getContentObject();
+				ACLMessage cargas=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double[] cargasData = (double[]) cargas.getContentObject();
+				ACLMessage altura=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double[] alturaData = (double[]) altura.getContentObject();
+				ACLMessage duelosAereos=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double[] duelosAereosData = (double[]) duelosAereos.getContentObject();
+				
+				ACLMessage pesoYCargas=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double pesoYCargasData = (double) pesoYCargas.getContentObject();
+				ACLMessage pesoYAltura=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double pesoYAlturaData = (double) pesoYAltura.getContentObject();
+				ACLMessage pesoYDuelosAereos=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double pesoYDuelosAereosData = (double) pesoYDuelosAereos.getContentObject();
+				
+				ACLMessage cargasYAltura=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double cargasYAlturaData = (double) cargasYAltura.getContentObject();
+				ACLMessage cargasYduelosAereos=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double cargasYduelosAereosData = (double) cargasYduelosAereos.getContentObject();
+				
+				ACLMessage alturaYDuelosAereos=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				double alturaYDuelosAereosData = (double) alturaYDuelosAereos.getContentObject();
+				
+				JFramePrincipal.mostrarCorrelaciones(pesoData,cargasData,alturaData,duelosAereosData,
+						pesoYCargasData,pesoYAlturaData,pesoYDuelosAereosData,
+						cargasYAlturaData,cargasYduelosAereosData,alturaYDuelosAereosData);
 				
 			} else if(currentCode==5){
+				ACLMessage param1=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				String[] dataResult1 = (String[]) param1.getContentObject();
+				ACLMessage param2=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				int[] dataResult2 = (int[]) param2.getContentObject();
 				
+				JFramePrincipal.mostrarClusters(dataResult1,dataResult2);
+			} else if(currentCode==6){
+				ACLMessage res=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				String dataRes = res.getContent();
+				
+				JFramePrincipal.confirmarActualizacion(dataRes);
 			}
         	
         	
