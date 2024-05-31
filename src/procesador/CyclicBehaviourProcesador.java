@@ -1,10 +1,11 @@
 package procesador;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,19 +16,20 @@ import org.apache.commons.math4.legacy.stat.correlation.PearsonsCorrelation;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
-import datosFutbol.*;
+import datosFutbol.GeneralPlayerDataX90;
+import datosFutbol.GoalkeeperPlayerDataX90;
+import datosFutbol.PlayerDataX90;
+import datosFutbol.TeamData;
 import jade.content.lang.sl.SLCodec;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.FIPAAgentManagement.Envelope;
-import jade.lang.acl.*;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.Remove;
-
-import java.io.Serializable;
 
 public class CyclicBehaviourProcesador extends CyclicBehaviour {
 
@@ -39,7 +41,6 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 	public void action() {
 		//Recibimos la solicitud de la UI
 		ACLMessage solicitudMsg=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-		System.out.println(solicitudMsg.getContent());
 		String[] solicitud = solicitudMsg.getContent().split(";");
 
 		//Construimos y mandamos un mensaje solicitando los datos al buscador
@@ -52,6 +53,14 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		pedirDatos.setContent("datos;"+(solicitud[1].equals("A")?"A":"NA")); //Si el UI nos pide actualizar los datos antes, pedimos que se actualicen los datos
 		this.myAgent.send(pedirDatos);
 
+		//Preparamos un mensage para enviar la info que se nos solicite
+		Serializable respuesta = "ERROR"; //Respuesta por defecto(no deberia mandarse nunca)
+		ACLMessage aclMessage = new ACLMessage(ACLMessage.INFORM);
+		aclMessage.addReceiver(solicitudMsg.getSender());
+		aclMessage.setOntology("ontologia");
+		aclMessage.setLanguage(new SLCodec().getName());
+		aclMessage.setEnvelope(new Envelope());
+		aclMessage.getEnvelope().setPayloadEncoding("ISO8859_1");
 		try
 		{	
 			//Recibimos los datos, junto con el mapa de columnas
@@ -60,37 +69,21 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 			columnas = (HashMap<String,Integer>)columnasMsg.getContentObject();
 			datos = (String[][])dataMsg.getContentObject();
 
-			//Preparamos un mensage para enviar la info que se nos solicite
-			Serializable respuesta = "ERROR"; //Respuesta por defecto(no deberia mandarse nunca)
-			ACLMessage aclMessage = new ACLMessage(ACLMessage.INFORM);
-			aclMessage.addReceiver(solicitudMsg.getSender());
-			aclMessage.setOntology("ontologia");
-			aclMessage.setLanguage(new SLCodec().getName());
-			aclMessage.setEnvelope(new Envelope());
-			aclMessage.getEnvelope().setPayloadEncoding("ISO8859_1");
 
 			//Observamos que se nos pide en la peticion y actuamos en consecuencia
 			if("general".equals(solicitud[0])){
-				try {
-					respuesta = dataX90(solicitud[2],solicitud[3]);
-					aclMessage.setContentObject(respuesta);
-				}
-				catch(IndexOutOfBoundsException e) {
-					aclMessage.setContent("Ese jugador probablemente no juega en el equipo indicado");
-				}
+
+				respuesta = dataX90(solicitud[2],solicitud[3]);
+				aclMessage.setContentObject(respuesta);
+
 				this.myAgent.send(aclMessage);
 			}
 			else if("comparar".equals(solicitud[0])) {
-				try {
-					respuesta = dataX90(solicitud[2],solicitud[3]);
-					aclMessage.setContentObject(respuesta);
-					this.myAgent.send(aclMessage);
-					respuesta = dataX90(solicitud[4],solicitud[5]);
-					aclMessage.setContentObject(respuesta);
-				}
-				catch(IndexOutOfBoundsException e) {
-					aclMessage.setContent("Ese jugador probablemente no juega en el equipo indicado");
-				}
+				respuesta = dataX90(solicitud[2],solicitud[3]);
+				aclMessage.setContentObject(respuesta);
+				this.myAgent.send(aclMessage);
+				respuesta = dataX90(solicitud[4],solicitud[5]);
+				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
 			}
 			else if("datosEquipo".equals(solicitud[0])) {
@@ -125,9 +118,6 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 						duelosAereos.add(Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]));
 					}*/
 				}
-				for(int i = 0; i < peso.size();i++){
-					System.out.println(peso.get(i) + " " + cargas.get(i) + " " + altura.get(i) + " " + duelosAereos.get(i));
-				}
 				PearsonsCorrelation correlacion = new PearsonsCorrelation();
 				double[] arrayPeso = peso.stream().mapToDouble(i -> i).toArray();
 				double[] arrayCargas = cargas.stream().mapToDouble(i -> i).toArray();
@@ -140,7 +130,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				double coeficientePearsonCargasDuelosAereos = correlacion.correlation(arrayCargas, arrayDuelosAereos);
 				double coeficientePearsonAlturaDuelosAereos = correlacion.correlation(arrayAltura, arrayDuelosAereos);
 
-				System.out.println("Voy a mandar los mensajes ahora");
+
 				respuesta = arrayPeso;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
@@ -153,38 +143,38 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 				respuesta = arrayDuelosAereos;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				
+
 				//PesoCargas
 				respuesta = coeficientePearsonPesoCargas;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				
+
 				//PesoAltura
 				respuesta = coeficientePearsonAlturaPeso;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				
+
 				//PesoDuelosAereos
 				respuesta = coeficientePearsonPesoDuelosAereos;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				
-				
+
+
 				//CargasAltura
 				respuesta = coeficientePearsonAlturaCargas;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				
+
 				//CargasDuelosAereos
 				respuesta = coeficientePearsonCargasDuelosAereos;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				
+
 				//AlturaDuelosAereos
 				respuesta = coeficientePearsonAlturaDuelosAereos;
 				aclMessage.setContentObject(respuesta);
 				this.myAgent.send(aclMessage);
-				
+
 			}
 			else if("clusterizar".equals(solicitud[0])) {
 				dataToCSV(procesarDatosClustering());
@@ -227,7 +217,9 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 		} catch (UnreadableException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
-			e.printStackTrace();
+			aclMessage.setContent("ERROR");
+			this.myAgent.send(aclMessage);
+			//e.printStackTrace();
 		}
 	}
 
@@ -245,7 +237,6 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 	private PlayerDataX90 dataX90(String nombre, String equipo) {
 		int i = 0;
 		while(!(datos[i][0].contains(nombre) && datos[i][6].contains(equipo))) {
-			System.out.println(i + " " + datos[i][0] + " " + datos[i][6]);
 			i++;
 		}
 		if(datos[i][columnas.get("posicion")].equals("Portero")) {

@@ -63,10 +63,6 @@ public class JFrameSeleccionar extends JFrame {
         btnEnviar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
                 //Al pulsar el botón Enviar se selecciona el método de clasificación del ComboBox del interaz y el fichero que se hubiese cargado
-                System.out.println("Se ha pulsado el botón enviar");
-                System.out.println("Combo: " + comboBox.getSelectedItem());
-                //agente.setMetodo(comboBox.getSelectedItem().toString());
-                System.out.println("Fichero: " + textArea.getText());
                 //agente.setFichero(fichero1);
                 //Despertamos al AgenteUsuario
                 agente.doWake();

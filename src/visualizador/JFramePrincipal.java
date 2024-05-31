@@ -45,7 +45,7 @@ public class JFramePrincipal extends JFrame {
     private JPanel contentPane;
     JFrameSeleccionar ventana;
     
-    private static JTextArea textArea;
+    protected static JTextArea textArea;
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -587,8 +587,6 @@ public class JFramePrincipal extends JFrame {
                 double maxX = Arrays.stream(datosX).max().orElse(1);
                 double minY = Arrays.stream(datosY).min().orElse(0);
                 double maxY = Arrays.stream(datosY).max().orElse(1);*/
-                System.out.println("minX: " + minX);
-                System.out.println("minY: " + minY);
                 // Calcular los valores de las escalas en función de los límites
                 double escalaX = (maxX - minX) / 10; // 10 marcas en el eje X
                 double escalaY = (maxY - minY) / 10; // 10 marcas en el eje Y
@@ -609,18 +607,10 @@ public class JFramePrincipal extends JFrame {
 
                 // Dibujar puntos
                 for (int i = 0; i < datosX.length; i++) {
-                	System.out.println("datosX[" + i + "] = " + datosX[i] + ", datosY[" + i + "] = " + datosY[i]);
-                    
-                    // Verificación de los valores mínimos y escalas
-                    System.out.println("minX = " + minX + ", minY = " + minY + ", escalaX = " + escalaX + ", escalaY = " + escalaY);
-                    
                     /*int x = 50 + (int) ((datosX[i] - minX) / escalaX * (getWidth() - 100));
                     int y = getHeight() - 50 - (int) ((datosY[i] - minY) / escalaY * (getHeight() - 100));*/
                     int x = (int)(((datosX[i]-minX)/(maxX-minX))*(getWidth() - 100))+ 50;
                     int y = (int)((1-((datosY[i]-minY)/(maxY-minY)))*(getHeight() - 100))+ 50;
-                    
-                    // Imprimir las coordenadas calculadas
-                    System.out.println("Coordenadas calculadas: x = " + x + ", y = " + y);
                     
                     g.fillOval(x - 2, y - 2, 5, 5); // Dibujamos un punto en la posición
                 }

@@ -28,10 +28,7 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 		ACLMessage msg=this.myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
 		Serializable respuesta;
 		try
-		{
-						//Imprimimos por pantalla el texto a buscar
-			System.out.println(msg.getSender().getName()+":"+ (String)msg.getContent());
-			
+		{			
 			String[] mensaje = ((String)msg.getContent()).split(";");
 			
 			//Si se solicita que los datos se actualicen se hace
@@ -77,7 +74,6 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 			Process process;			
 			process = pb.start();
 			int exitCode = process.waitFor();
-			System.out.println(exitCode);
 			
 			
 		} catch (Exception e) {
@@ -149,7 +145,6 @@ public class CyclicBehaviourBuscador extends CyclicBehaviour {
 	//Metodo main para probar codigo
 	public static void main(String[] args) {
 		actualizarCSV(new String[] { CSVPath });
-		System.out.println("Ayuda");
 	}
 
 }

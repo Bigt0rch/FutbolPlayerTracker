@@ -14,7 +14,6 @@ public class CyclicBehaviourDataRequest extends CyclicBehaviour {
 			myAgent.doWait();
 			// Desde el interfaz de usuario el usuario ha pulsado el botón Enviar y podemos
 			// continuar
-			System.out.println("Continuando ...");
 			// Definimos un objeto DatosAnalizar que sea serializable y que contenga
 			// método de clasificación a aplicar que ha seleccionado el usuario en el
 			// interfaz

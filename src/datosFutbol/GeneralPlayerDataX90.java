@@ -30,7 +30,6 @@ public class GeneralPlayerDataX90 extends PlayerDataX90{
 
 	public GeneralPlayerDataX90(String datos[], Map<String,Integer> campos) {
 		position = datos[campos.get("posicion")];
-		System.out.println(Arrays.toString(datos));
 		minutes = (int) Double.parseDouble(datos[campos.get("time_played")]);
 		name = datos[campos.get("nombre")];
 		team = datos[campos.get("equipo")];

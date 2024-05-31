@@ -38,7 +38,6 @@ public class TeamData implements Serializable{
 		
 		for(int i : indices) {
 			String[] jugador = data[i];
-			System.out.println("Team data jugador " + i + ": " + jugador[0]);
 			goles += (int) Double.parseDouble(jugador[columnas.get("goals")]);
 			tiros_a_puerta += (int) Double.parseDouble(jugador[columnas.get("total_shots")]);
 			if(jugador[columnas.get("posicion")].equals("Portero")) {
