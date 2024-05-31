@@ -111,8 +111,7 @@ public class CyclicBehaviourProcesador extends CyclicBehaviour {
 							datos[i][columnas.get("altura")] != null && 
 							datos[i][columnas.get("aerial_duels_won")] != null &&
 							(int) Double.parseDouble(datos[i][columnas.get("altura")]) != 0 && 
-							(int) Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]) != 0 &&
-							Double.parseDouble(datos[i][columnas.get("altura")]) > 159){
+							(int) Double.parseDouble(datos[i][columnas.get("aerial_duels_won")]) != 0){
 						peso.add(Double.parseDouble(datos[i][columnas.get("peso")]));
 						cargas.add((Double.parseDouble(datos[i][columnas.get("tackles_won")])/Double.parseDouble(datos[i][columnas.get("time_played")]))*90);
 						altura.add(Double.parseDouble(datos[i][columnas.get("altura")]));
