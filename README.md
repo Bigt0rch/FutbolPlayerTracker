@@ -1,6 +1,6 @@
 # FutbolPlayerTracker
 
-##Autores
+## Autores
 * Pedro Luis Guerrica-Echevarría Agudo [`@PedroLuisGEA`](https://github.com/PedroLuisGEA)
 * Manuela Bautista Javier [`@manubj`](https://github.com/manubj)
 * Guillermo Franco Gimeno [`@GF3000`](https://github.com/GF3000)
