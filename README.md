@@ -25,4 +25,4 @@ Los agentes se deben lanzar en el mismo orden que vienen aqui descritos
 * **Equipo**: obtiene los datos del equipo indicado durante esta temporada.
 * **Correlaciones**: muestra graficas para estudiar la correlacion entre ciertas estadisticas de los jugadores, junto con la p de Pearson correspondiente.
 * **Clustering**: Agrupa a los jugadores de campo que han participado en al menos un partido en los grupos que el usuario indique, emplea el algoritmo de K means.
-* **Actualizar**: ordena al Agente Buscador, que es el que proporciona los datos, que actualice su base de datos haciendo web scrapping de la página web de LaLiga. Esta accion puede llevar al rededor de 20 mins. 
+* **Actualizar**: ordena al Agente Buscador, que es el que proporciona los datos, que actualice su base de datos haciendo web scrapping de la página web de LaLiga. Esta accion puede llevar alrededor de 20 mins. 
