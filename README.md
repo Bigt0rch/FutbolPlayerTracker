@@ -15,7 +15,7 @@ Los agentes se deben lanzar en el mismo orden que vienen aqui descritos
     - **Main class**: jade.boot 
     - **Program arguments**: -main false -host 127.0.0.1 agenteProcesador:procesador.AgenteProcesador
     - **VM arguments**: ---add-opens java.base/java.lang=ALL-UNNAMED
-3. `AgenteBuscador` 
+3. `AgenteVisualizador` 
     - **Main class**: jade.boot 
     - **Program arguments**: -main false -host 127.0.0.1 agenteVisualizador:visualizador.AgenteVisualizador
 
